@@ -5,9 +5,14 @@ const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9')
 
 // helpers
-const commandPaths = path.join(__dirname, './commands')
-const commandFiles = fs.readdirSync(commandPaths).filter(file => file.endsWith('.js'))
-const commands = (() => commandFiles.map(file => require(path.join(commandPaths, file))))()
+const commandsFolderPath = path.join(__dirname, './commands')
+const eventsFolderPath = path.join(__dirname, './events')
+
+const commandFiles = fs.readdirSync(commandsFolderPath).filter(file => file.endsWith('.js'))
+const eventFiles = fs.readdirSync(eventsFolderPath).filter(file => file.endsWith('.js'));
+
+const commands = (() => commandFiles.map(file => require(path.join(commandsFolderPath, file))))()
+const events = (() => eventFiles.map(file => require(path.join(eventsFolderPath, file))))()
 
 // src: https://discordjs.guide/creating-your-bot/command-handling.html#reading-command-files
 const clientCommands = (() => {
@@ -32,7 +37,21 @@ const registerCommands = async (token, botID, guildID) => {
     }
 }
 
+const registerListeners = (client) => {
+	// eslint-disable-next-line no-unused-vars
+	return new Promise((resolve, _reject) => {
+
+        for(const event of events){
+            if(event.once) client.once(event.name, (...args) => event.execute(...args))
+            else client.on(event.name, (...args) => event.execute(...args))
+        }
+
+		resolve()
+	})
+}
+
 module.exports = {
     clientCommands,
-    registerCommands
+    registerCommands,
+    registerListeners
 }
