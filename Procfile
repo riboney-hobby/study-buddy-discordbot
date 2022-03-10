@@ -1,1 +1,1 @@
-worker: node src/index.js
+worker: NODE_ENV=DEV node ./src/index.js
